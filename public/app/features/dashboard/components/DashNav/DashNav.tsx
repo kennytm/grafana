@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 // Utils & Services
 import { AngularComponent, getAngularLoader } from 'app/core/services/AngularLoader';
 import { appEvents } from 'app/core/app_events';
-import { PlaylistSrv } from 'app/features/playlist/playlist_srv';
 
 // Components
 import { DashNavButton } from './DashNavButton';
@@ -24,17 +23,15 @@ export interface Props {
   isFullscreen: boolean;
   $injector: any;
   updateLocation: typeof updateLocation;
-  onAddPanel: () => void;
+  onUploadSnapshot: (snapshot: string) => void;
 }
 
 export class DashNav extends PureComponent<Props> {
   timePickerEl: HTMLElement;
   timepickerCmp: AngularComponent;
-  playlistSrv: PlaylistSrv;
 
   constructor(props: Props) {
     super(props);
-    this.playlistSrv = this.props.$injector.get('playlistSrv');
   }
 
   componentDidMount() {
@@ -52,10 +49,6 @@ export class DashNav extends PureComponent<Props> {
       this.timepickerCmp.destroy();
     }
   }
-
-  onOpenSearch = () => {
-    appEvents.emit('show-dash-search');
-  };
 
   onClose = () => {
     if (this.props.editview) {
@@ -75,74 +68,17 @@ export class DashNav extends PureComponent<Props> {
     appEvents.emit('toggle-kiosk-mode');
   };
 
-  onSave = () => {
-    const { $injector } = this.props;
-    const dashboardSrv = $injector.get('dashboardSrv');
-    dashboardSrv.saveDashboard();
+  onUploadSnapshot = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.currentTarget.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.props.onUploadSnapshot(JSON.parse(e.target.result));
+    };
+    reader.readAsText(files[0]);
   };
-
-  onOpenSettings = () => {
-    this.props.updateLocation({
-      query: { editview: 'settings' },
-      partial: true,
-    });
-  };
-
-  onStarDashboard = () => {
-    const { dashboard, $injector } = this.props;
-    const dashboardSrv = $injector.get('dashboardSrv');
-
-    dashboardSrv.starDashboard(dashboard.id, dashboard.meta.isStarred).then(newState => {
-      dashboard.meta.isStarred = newState;
-      this.forceUpdate();
-    });
-  };
-
-  onPlaylistPrev = () => {
-    this.playlistSrv.prev();
-  };
-
-  onPlaylistNext = () => {
-    this.playlistSrv.next();
-  };
-
-  onPlaylistStop = () => {
-    this.playlistSrv.stop();
-    this.forceUpdate();
-  };
-
-  onOpenShare = () => {
-    const $rootScope = this.props.$injector.get('$rootScope');
-    const modalScope = $rootScope.$new();
-    modalScope.tabIndex = 0;
-    modalScope.dashboard = this.props.dashboard;
-
-    appEvents.emit('show-modal', {
-      src: 'public/app/features/dashboard/components/ShareModal/template.html',
-      scope: modalScope,
-    });
-  };
-
-  renderDashboardTitleSearchButton() {
-    const { dashboard } = this.props;
-
-    const folderTitle = dashboard.meta.folderTitle;
-    const haveFolder = dashboard.meta.folderId > 0;
-
-    return (
-      <>
-        <div>
-          <a className="navbar-page-btn" onClick={this.onOpenSearch}>
-            {!this.isInFullscreenOrSettings && <i className="gicon gicon-dashboard" />}
-            {haveFolder && <span className="navbar-page-btn--folder">{folderTitle} / </span>}
-            {dashboard.title}
-            <i className="fa fa-caret-down" />
-          </a>
-        </div>
-        <div className="navbar__spacer" />
-      </>
-    );
-  }
 
   get isInFullscreenOrSettings() {
     return this.props.editview || this.props.isFullscreen;
@@ -161,91 +97,26 @@ export class DashNav extends PureComponent<Props> {
   }
 
   render() {
-    const { dashboard, onAddPanel } = this.props;
-    const { canStar, canSave, canShare, showSettings, isStarred } = dashboard.meta;
-    const { snapshot } = dashboard;
-
-    const snapshotUrl = snapshot && snapshot.originalUrl;
-
     return (
       <div className="navbar">
         {this.isInFullscreenOrSettings && this.renderBackButton()}
-        {this.renderDashboardTitleSearchButton()}
-
-        {this.playlistSrv.isPlaying && (
-          <div className="navbar-buttons navbar-buttons--playlist">
-            <DashNavButton
-              tooltip="Go to previous dashboard"
-              classSuffix="tight"
-              icon="fa fa-step-backward"
-              onClick={this.onPlaylistPrev}
-            />
-            <DashNavButton
-              tooltip="Stop playlist"
-              classSuffix="tight"
-              icon="fa fa-stop"
-              onClick={this.onPlaylistStop}
-            />
-            <DashNavButton
-              tooltip="Go to next dashboard"
-              classSuffix="tight"
-              icon="fa fa-forward"
-              onClick={this.onPlaylistNext}
-            />
-          </div>
-        )}
 
         <div className="navbar-buttons navbar-buttons--actions">
-          {canSave && (
-            <DashNavButton
-              tooltip="Add panel"
-              classSuffix="add-panel"
-              icon="gicon gicon-add-panel"
-              onClick={onAddPanel}
-            />
-          )}
-
-          {canStar && (
-            <DashNavButton
-              tooltip="Mark as favorite"
-              classSuffix="star"
-              icon={`${isStarred ? 'fa fa-star' : 'fa fa-star-o'}`}
-              onClick={this.onStarDashboard}
-            />
-          )}
-
-          {canShare && (
-            <DashNavButton
-              tooltip="Share dashboard"
-              classSuffix="share"
-              icon="fa fa-share-square-o"
-              onClick={this.onOpenShare}
-            />
-          )}
-
-          {canSave && (
-            <DashNavButton tooltip="Save dashboard" classSuffix="save" icon="fa fa-save" onClick={this.onSave} />
-          )}
-
-          {snapshotUrl && (
-            <DashNavButton
-              tooltip="Open original dashboard"
-              classSuffix="snapshot-origin"
-              icon="fa fa-link"
-              href={snapshotUrl}
-            />
-          )}
-
-          {showSettings && (
-            <DashNavButton
-              tooltip="Dashboard settings"
-              classSuffix="settings"
-              icon="fa fa-cog"
-              onClick={this.onOpenSettings}
-            />
-          )}
+          <input
+            type="file"
+            id="snapUpload"
+            name="snapUpload"
+            className="hide"
+            onChange={this.onUploadSnapshot}
+            accept="application/json"
+          />
+          <label className="btn btn-secondary" htmlFor="snapUpload">
+            <i className="fa fa-upload" />
+            &nbsp;Open snapshot
+          </label>
         </div>
 
+        <div className="navbar__spacer" />
         <div className="navbar-buttons navbar-buttons--tv">
           <DashNavButton
             tooltip="Cycle view mode"

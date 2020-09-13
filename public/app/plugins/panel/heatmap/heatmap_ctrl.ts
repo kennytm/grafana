@@ -268,11 +268,7 @@ export class HeatmapCtrl extends MetricsPanelCtrl {
   }
 
   getPanelDataSourceType() {
-    if (this.datasource.meta && this.datasource.meta.id) {
-      return this.datasource.meta.id;
-    } else {
-      return 'unknown';
-    }
+    return 'unknown';
   }
 
   onDataReceived(dataList) {

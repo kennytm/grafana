@@ -4,11 +4,11 @@ import _ from 'lodash';
 
 // Utils & Services
 import coreModule from 'app/core/core_module';
-import { variableTypes } from './variable';
 import { Graph } from 'app/core/utils/dag';
 import { TemplateSrv } from 'app/features/templating/template_srv';
 import { TimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
+import { TextBoxVariable } from './TextBoxVariable';
 
 // Types
 import { TimeRange } from '@grafana/ui/src';
@@ -18,13 +18,7 @@ export class VariableSrv {
   variables: any[];
 
   /** @ngInject */
-  constructor(
-    private $q,
-    private $location,
-    private $injector,
-    private templateSrv: TemplateSrv,
-    private timeSrv: TimeSrv
-  ) {}
+  constructor(private $q, private $location, private templateSrv: TemplateSrv, private timeSrv: TimeSrv) {}
 
   init(dashboard: DashboardModel) {
     this.dashboard = dashboard;
@@ -101,15 +95,7 @@ export class VariableSrv {
   }
 
   createVariableFromModel(model) {
-    const ctor = variableTypes[model.type].ctor;
-    if (!ctor) {
-      throw {
-        message: 'Unable to find variable constructor for ' + model.type,
-      };
-    }
-
-    const variable = this.$injector.instantiate(ctor, { model: model });
-    return variable;
+    return new TextBoxVariable({ model }, this);
   }
 
   addVariable(variable) {

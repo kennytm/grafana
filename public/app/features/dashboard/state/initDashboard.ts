@@ -1,8 +1,6 @@
 // Services & Utils
 import { createErrorNotification } from 'app/core/copy/appNotification';
-import { getBackendSrv } from 'app/core/services/backend_srv';
 import { DashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
-import { DashboardLoaderSrv } from 'app/features/dashboard/services/DashboardLoaderSrv';
 import { TimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { AnnotationsSrv } from 'app/features/annotations/annotations_srv';
 import { VariableSrv } from 'app/features/templating/variable_srv';
@@ -11,7 +9,6 @@ import { KeybindingSrv } from 'app/core/services/keybindingSrv';
 // Actions
 import { updateLocation } from 'app/core/actions';
 import { notifyApp } from 'app/core/actions';
-import locationUtil from 'app/core/utils/location_util';
 import {
   dashboardInitFetching,
   dashboardInitCompleted,
@@ -21,94 +18,13 @@ import {
 } from './actions';
 
 // Types
-import { DashboardRouteInfo, StoreState, ThunkDispatch, ThunkResult, DashboardDTO } from 'app/types';
+import { ThunkResult, DashboardDTO } from 'app/types';
 import { DashboardModel } from './DashboardModel';
 
 export interface InitDashboardArgs {
   $injector: any;
   $scope: any;
-  urlUid?: string;
-  urlSlug?: string;
-  urlType?: string;
-  urlFolderId?: string;
-  routeInfo: DashboardRouteInfo;
-  fixUrl: boolean;
-}
-
-async function redirectToNewUrl(slug: string, dispatch: ThunkDispatch, currentPath: string) {
-  const res = await getBackendSrv().getDashboardBySlug(slug);
-
-  if (res) {
-    let newUrl = res.meta.url;
-
-    // fix solo route urls
-    if (currentPath.indexOf('dashboard-solo') !== -1) {
-      newUrl = newUrl.replace('/d/', '/d-solo/');
-    }
-
-    const url = locationUtil.stripBaseFromUrl(newUrl);
-    dispatch(updateLocation({ path: url, partial: true, replace: true }));
-  }
-}
-
-async function fetchDashboard(
-  args: InitDashboardArgs,
-  dispatch: ThunkDispatch,
-  getState: () => StoreState
-): Promise<DashboardDTO | null> {
-  try {
-    switch (args.routeInfo) {
-      case DashboardRouteInfo.Home: {
-        // load home dash
-        const dashDTO: DashboardDTO = await getBackendSrv().get('/api/dashboards/home');
-
-        // if user specified a custom home dashboard redirect to that
-        if (dashDTO.redirectUri) {
-          const newUrl = locationUtil.stripBaseFromUrl(dashDTO.redirectUri);
-          dispatch(updateLocation({ path: newUrl, replace: true }));
-          return null;
-        }
-
-        // disable some actions on the default home dashboard
-        dashDTO.meta.canSave = false;
-        dashDTO.meta.canShare = false;
-        dashDTO.meta.canStar = false;
-        return dashDTO;
-      }
-      case DashboardRouteInfo.Normal: {
-        // for old db routes we redirect
-        if (args.urlType === 'db') {
-          redirectToNewUrl(args.urlSlug, dispatch, getState().location.path);
-          return null;
-        }
-
-        const loaderSrv: DashboardLoaderSrv = args.$injector.get('dashboardLoaderSrv');
-        const dashDTO: DashboardDTO = await loaderSrv.loadDashboard(args.urlType, args.urlSlug, args.urlUid);
-
-        if (args.fixUrl && dashDTO.meta.url) {
-          // check if the current url is correct (might be old slug)
-          const dashboardUrl = locationUtil.stripBaseFromUrl(dashDTO.meta.url);
-          const currentPath = getState().location.path;
-
-          if (dashboardUrl !== currentPath) {
-            // replace url to not create additional history items and then return so that initDashboard below isn't executed multiple times.
-            dispatch(updateLocation({ path: dashboardUrl, partial: true, replace: true }));
-            return null;
-          }
-        }
-        return dashDTO;
-      }
-      case DashboardRouteInfo.New: {
-        return getNewDashboardModelData(args.urlFolderId);
-      }
-      default:
-        throw { message: 'Unknown route ' + args.routeInfo };
-    }
-  } catch (err) {
-    dispatch(dashboardInitFailed({ message: 'Failed to fetch dashboard', error: err }));
-    console.log(err);
-    return null;
-  }
+  dashDTO: DashboardDTO;
 }
 
 /**
@@ -134,7 +50,7 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
     }, 500);
 
     // fetch dashboard data
-    const dashDTO = await fetchDashboard(args, dispatch, getState);
+    const dashDTO = args.dashDTO;
 
     // returns null if there was a redirect or error
     if (!dashDTO) {
@@ -168,6 +84,7 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
     const unsavedChangesSrv = args.$injector.get('unsavedChangesSrv');
     const dashboardSrv: DashboardSrv = args.$injector.get('dashboardSrv');
 
+    timeSrv.setTime(dashboard.time);
     timeSrv.init(dashboard);
     annotationsSrv.init(dashboard);
 
@@ -203,31 +120,4 @@ export function initDashboard(args: InitDashboardArgs): ThunkResult<void> {
     // yay we are done
     dispatch(dashboardInitCompleted(dashboard));
   };
-}
-
-function getNewDashboardModelData(urlFolderId?: string): any {
-  const data = {
-    meta: {
-      canStar: false,
-      canShare: false,
-      isNew: true,
-      folderId: 0,
-    },
-    dashboard: {
-      title: 'New dashboard',
-      panels: [
-        {
-          type: 'add-panel',
-          gridPos: { x: 0, y: 0, w: 12, h: 9 },
-          title: 'Panel Title',
-        },
-      ],
-    },
-  };
-
-  if (urlFolderId) {
-    data.meta.folderId = parseInt(urlFolderId, 10);
-  }
-
-  return data;
 }

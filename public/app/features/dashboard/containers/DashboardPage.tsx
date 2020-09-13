@@ -29,6 +29,7 @@ import {
   DashboardInitPhase,
   DashboardRouteInfo,
   DashboardInitError,
+  DashboardDTO,
   AppNotificationSeverity,
 } from 'app/types';
 import { DashboardModel, PanelModel } from 'app/features/dashboard/state';
@@ -76,17 +77,26 @@ export class DashboardPage extends PureComponent<Props, State> {
     rememberScrollTop: 0,
   };
 
-  async componentDidMount() {
+  async refreshDashboard(dashDTO: DashboardDTO) {
+    this.setState({ showLoadingState: true });
+    dashDTO.meta.canEdit = false;
+    // load an empty dashboard as a workaround to avoid some panel retaining old data when reopening
+    // a dashboard.
     this.props.initDashboard({
       $injector: this.props.$injector,
       $scope: this.props.$scope,
-      urlSlug: this.props.urlSlug,
-      urlUid: this.props.urlUid,
-      urlType: this.props.urlType,
-      urlFolderId: this.props.urlFolderId,
-      routeInfo: this.props.routeInfo,
-      fixUrl: true,
+      dashDTO: { dashboard: { title: '' }, meta: {} },
     });
+    this.props.initDashboard({
+      $injector: this.props.$injector,
+      $scope: this.props.$scope,
+      dashDTO,
+    });
+    this.setState({ showLoadingState: false });
+  }
+
+  async componentDidMount() {
+    await this.refreshDashboard({ dashboard: { title: '' }, meta: {} });
   }
 
   componentWillUnmount() {
@@ -105,7 +115,7 @@ export class DashboardPage extends PureComponent<Props, State> {
 
     // if we just got dashboard update title
     if (!prevProps.dashboard) {
-      document.title = dashboard.title + ' - Grafana';
+      document.title = dashboard.title + ' - Grafana Snapshot Viewer';
     }
 
     // Due to the angular -> react url bridge we can ge an update here with new uid before the container unmounts
@@ -207,24 +217,6 @@ export class DashboardPage extends PureComponent<Props, State> {
     this.setState({ scrollTop: target.scrollTop });
   };
 
-  onAddPanel = () => {
-    const { dashboard } = this.props;
-
-    // Return if the "Add panel" exists already
-    if (dashboard.panels.length > 0 && dashboard.panels[0].type === 'add-panel') {
-      return;
-    }
-
-    dashboard.addPanel({
-      type: 'add-panel',
-      gridPos: { x: 0, y: 0, w: 12, h: 8 },
-      title: 'Panel Title',
-    });
-
-    // scroll to top after adding panel
-    this.setState({ scrollTop: 0 });
-  };
-
   renderSlowInitState() {
     return (
       <div className="dashboard-loading">
@@ -278,7 +270,7 @@ export class DashboardPage extends PureComponent<Props, State> {
           isFullscreen={isFullscreen}
           editview={editview}
           $injector={$injector}
-          onAddPanel={this.onAddPanel}
+          onUploadSnapshot={(dto: DashboardDTO) => this.refreshDashboard(dto)}
         />
         <div className="scroll-canvas scroll-canvas--dashboard">
           <CustomScrollbar
@@ -304,9 +296,9 @@ export class DashboardPage extends PureComponent<Props, State> {
 }
 
 export const mapStateToProps = (state: StoreState) => ({
-  urlUid: state.location.routeParams.uid,
-  urlSlug: state.location.routeParams.slug,
-  urlType: state.location.routeParams.type,
+  urlUid: '0',
+  urlSlug: '0',
+  urlType: 'snapshot',
   editview: state.location.query.editview,
   urlPanelId: state.location.query.panelId,
   urlFolderId: state.location.query.folderId,

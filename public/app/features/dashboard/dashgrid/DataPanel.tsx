@@ -3,11 +3,8 @@ import React, { Component } from 'react';
 
 // Services
 import { DatasourceSrv, getDatasourceSrv } from 'app/features/plugins/datasource_srv';
-// Utils
-import kbn from 'app/core/utils/kbn';
 // Types
 import {
-  DataQueryOptions,
   DataQueryResponse,
   DataQueryError,
   LoadingState,
@@ -108,19 +105,7 @@ export class DataPanel extends Component<Props, State> {
   }
 
   private issueQueries = async () => {
-    const {
-      isVisible,
-      queries,
-      datasource,
-      panelId,
-      dashboardId,
-      timeRange,
-      widthPixels,
-      maxDataPoints,
-      scopedVars,
-      onDataResponse,
-      onError,
-    } = this.props;
+    const { isVisible, queries, onError } = this.props;
 
     if (!isVisible) {
       return;
@@ -134,46 +119,12 @@ export class DataPanel extends Component<Props, State> {
     this.setState({ loading: LoadingState.Loading });
 
     try {
-      const ds = await this.dataSourceSrv.get(datasource, scopedVars);
-
-      const minInterval = this.props.minInterval || ds.interval;
-      const intervalRes = kbn.calculateInterval(timeRange, widthPixels, minInterval);
-
-      // make shallow copy of scoped vars,
-      // and add built in variables interval and interval_ms
-      const scopedVarsWithInterval = Object.assign({}, scopedVars, {
-        __interval: { text: intervalRes.interval, value: intervalRes.interval },
-        __interval_ms: { text: intervalRes.intervalMs.toString(), value: intervalRes.intervalMs },
-      });
-
-      const queryOptions: DataQueryOptions = {
-        timezone: 'browser',
-        panelId: panelId,
-        dashboardId: dashboardId,
-        range: timeRange,
-        rangeRaw: timeRange.raw,
-        interval: intervalRes.interval,
-        intervalMs: intervalRes.intervalMs,
-        targets: queries,
-        maxDataPoints: maxDataPoints || widthPixels,
-        scopedVars: scopedVarsWithInterval,
-        cacheTimeout: null,
-      };
-
-      const resp = await ds.query(queryOptions);
-
       if (this.isUnmounted) {
         return;
       }
 
-      if (onDataResponse) {
-        onDataResponse(resp);
-      }
-
       this.setState({
         loading: LoadingState.Done,
-        response: resp,
-        data: getProcessedSeriesData(resp.data),
         isFirstLoad: false,
       });
     } catch (err) {
