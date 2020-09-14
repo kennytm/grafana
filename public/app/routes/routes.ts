@@ -9,8 +9,6 @@ import { DashboardRouteInfo } from 'app/types';
 
 /** @ngInject */
 export function setupAngularRoutes($routeProvider, $locationProvider) {
-  $locationProvider.html5Mode(true);
-
   $routeProvider
     .when('/', {
       template: '<react-container />',
