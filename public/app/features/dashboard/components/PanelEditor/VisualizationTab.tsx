@@ -7,7 +7,7 @@ import { StoreState } from 'app/types';
 import { PanelModel } from '../../state/PanelModel';
 import { connect, MapStateToProps, MapDispatchToProps } from 'react-redux';
 import { VizTypePicker, getAllPanelPluginMeta, filterPluginList } from '../../panel_editor/VizTypePicker';
-import { Field } from '@grafana/ui/src/components/Forms/Field';
+import { Field } from '@grafana/ui';
 
 interface OwnProps {
   panel: PanelModel;

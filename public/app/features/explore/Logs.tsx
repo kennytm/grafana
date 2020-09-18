@@ -21,7 +21,7 @@ import store from 'app/core/store';
 
 import { ExploreGraphPanel } from './ExploreGraphPanel';
 import { MetaInfoText } from './MetaInfoText';
-import { RowContextOptions } from '@grafana/ui/src/components/Logs/LogRowContextProvider';
+import { RowContextOptions } from '@grafana/ui';
 
 const SETTINGS_KEYS = {
   showLabels: 'grafana.explore.logs.showLabels',

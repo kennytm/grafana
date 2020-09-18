@@ -2,11 +2,6 @@ import 'symbol-observable';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
-import 'whatwg-fetch'; // fetch polyfill needed for PhantomJs rendering
-import 'abortcontroller-polyfill/dist/polyfill-patch-fetch'; // fetch polyfill needed for PhantomJs rendering
-// @ts-ignore
-import ttiPolyfill from 'tti-polyfill';
-
 import 'file-saver';
 import 'lodash';
 import 'jquery';
@@ -197,16 +192,6 @@ export class GrafanaApp {
 
   initEchoSrv() {
     setEchoSrv(new Echo({ debug: process.env.NODE_ENV === 'development' }));
-
-    ttiPolyfill.getFirstConsistentlyInteractive().then((tti: any) => {
-      // Collecting paint metrics first
-      const paintMetrics = performance && performance.getEntriesByType ? performance.getEntriesByType('paint') : [];
-
-      for (const metric of paintMetrics) {
-        reportPerformance(metric.name, Math.round(metric.startTime + metric.duration));
-      }
-      reportPerformance('tti', tti);
-    });
 
     registerEchoBackend(new PerformanceBackend({}));
 

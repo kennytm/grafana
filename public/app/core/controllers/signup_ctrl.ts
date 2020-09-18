@@ -1,6 +1,6 @@
 import config from 'app/core/config';
 import coreModule from '../core_module';
-import { getBackendSrv } from '@grafana/runtime/src/services';
+import { getBackendSrv } from '@grafana/runtime';
 import { promiseToDigest } from '../utils/promiseToDigest';
 
 export class SignUpCtrl {

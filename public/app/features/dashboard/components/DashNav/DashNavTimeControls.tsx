@@ -17,7 +17,7 @@ import { TimePickerWithHistory } from 'app/core/components/TimePicker/TimePicker
 
 // Utils & Services
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
-import { defaultIntervals } from '@grafana/ui/src/components/RefreshPicker/RefreshPicker';
+import { defaultIntervals } from '@grafana/ui';
 import { appEvents } from 'app/core/core';
 
 const getStyles = stylesFactory((theme: GrafanaTheme) => {

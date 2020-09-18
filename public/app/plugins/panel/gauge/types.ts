@@ -1,5 +1,5 @@
 import { VizOrientation, SelectableValue } from '@grafana/data';
-import { SingleStatBaseOptions } from '@grafana/ui/src/components/SingleStatShared/SingleStatBaseOptions';
+import { SingleStatBaseOptions } from '@grafana/ui';
 
 export interface GaugeOptions extends SingleStatBaseOptions {
   showThresholdLabels: boolean;

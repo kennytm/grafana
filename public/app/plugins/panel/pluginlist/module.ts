@@ -41,19 +41,6 @@ class PluginListCtrl extends PanelCtrl {
     this.$location.url(`plugins/${plugin.id}/edit`);
   }
 
-  updateAvailable(plugin: any, $event: any) {
-    $event.stopPropagation();
-    $event.preventDefault();
-
-    const modalScope = this.$scope.$new(true);
-    modalScope.plugin = plugin;
-
-    this.publishAppEvent(CoreEvents.showModal, {
-      src: 'public/app/features/plugins/partials/update_instructions.html',
-      scope: modalScope,
-    });
-  }
-
   update() {
     promiseToDigest(this.$scope)(
       getBackendSrv()

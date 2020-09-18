@@ -65,14 +65,6 @@ export class AlertRuleList extends PureComponent<Props, any> {
     });
   };
 
-  onOpenHowTo = () => {
-    appEvents.emit(CoreEvents.showModal, {
-      src: 'public/app/features/alerting/partials/alert_howto.html',
-      modalClass: 'confirm-modal',
-      model: {},
-    });
-  };
-
   onSearchQueryChange = (value: string) => {
     this.props.setSearchQuery(value);
   };
@@ -117,9 +109,6 @@ export class AlertRuleList extends PureComponent<Props, any> {
               </div>
             </div>
             <div className="page-action-bar__spacer" />
-            <Button variant="secondary" onClick={this.onOpenHowTo}>
-              How to add an alert
-            </Button>
           </div>
           <section>
             <ol className="alert-rule-list">

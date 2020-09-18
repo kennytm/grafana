@@ -12,8 +12,8 @@ import {
 } from '@grafana/data';
 import { stylesFactory, useTheme, Input, IconButton } from '@grafana/ui';
 
-import { OrganizeFieldsTransformerOptions } from '@grafana/data/src/transformations/transformers/organize';
-import { createOrderFieldsComparer } from '@grafana/data/src/transformations/transformers/order';
+import { OrganizeFieldsTransformerOptions } from '@grafana/data';
+import { createOrderFieldsComparer } from '@grafana/data';
 
 interface OrganizeFieldsTransformerEditorProps extends TransformerUIProps<OrganizeFieldsTransformerOptions> {}
 

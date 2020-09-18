@@ -32,7 +32,7 @@ import {
 import { getThemeColor } from 'app/core/utils/colors';
 
 import { sortInAscendingOrder, deduplicateLogRowsById } from 'app/core/utils/explore';
-import { decimalSIPrefix } from '@grafana/data/src/valueFormats/symbolFormatters';
+import { decimalSIPrefix } from '@grafana/data';
 
 export const LogLevelColor = {
   [LogLevel.critical]: colors[7],

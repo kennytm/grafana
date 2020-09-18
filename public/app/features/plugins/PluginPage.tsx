@@ -172,13 +172,6 @@ class PluginPage extends PureComponent<Props, State> {
     return <PluginHelp plugin={plugin.meta} type="help" />;
   }
 
-  showUpdateInfo = () => {
-    appEvents.emit(CoreEvents.showModal, {
-      src: 'public/app/features/plugins/partials/update_instructions.html',
-      model: this.state.plugin.meta,
-    });
-  };
-
   renderVersionInfo(meta: PluginMeta) {
     if (!meta.info.version) {
       return null;
@@ -188,15 +181,6 @@ class PluginPage extends PureComponent<Props, State> {
       <section className="page-sidebar-section">
         <h4>Version</h4>
         <span>{meta.info.version}</span>
-        {meta.hasUpdate && (
-          <div>
-            <Tooltip content={meta.latestVersion} theme="info" placement="top">
-              <a href="#" onClick={this.showUpdateInfo}>
-                Update Available!
-              </a>
-            </Tooltip>
-          </div>
-        )}
       </section>
     );
   }

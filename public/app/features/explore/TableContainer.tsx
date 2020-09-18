@@ -9,7 +9,7 @@ import { splitOpen, toggleTable } from './state/actions';
 import { config } from 'app/core/config';
 import { PANEL_BORDER } from 'app/core/constants';
 import { MetaInfoText } from './MetaInfoText';
-import { FilterItem } from '@grafana/ui/src/components/Table/types';
+import { FilterItem } from '@grafana/ui';
 import { getFieldLinksForExplore } from './utils/links';
 
 interface TableContainerProps {

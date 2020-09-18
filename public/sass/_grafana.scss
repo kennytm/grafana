@@ -92,9 +92,6 @@
 @import 'components/popover-box';
 @import 'components/panel_header';
 
-// LOAD @grafana/ui components
-@import '../../packages/grafana-ui/src/index';
-
 // PAGES
 @import 'pages/login';
 @import 'pages/dashboard';

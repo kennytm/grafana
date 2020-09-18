@@ -20,7 +20,7 @@ import {
   getNameFromOptions,
   ReduceOptions,
   BinaryOptions,
-} from '@grafana/data/src/transformations/transformers/calculateField';
+} from '@grafana/data';
 
 import defaults from 'lodash/defaults';
 

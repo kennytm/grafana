@@ -10,7 +10,7 @@ import {
 } from '@grafana/data';
 import { Field, Input, FilterPill, HorizontalGroup } from '@grafana/ui';
 import { css } from 'emotion';
-import { FilterFieldsByNameTransformerOptions } from '@grafana/data/src/transformations/transformers/filterByName';
+import { FilterFieldsByNameTransformerOptions } from '@grafana/data';
 
 interface FilterByNameTransformerEditorProps extends TransformerUIProps<FilterFieldsByNameTransformerOptions> {}
 

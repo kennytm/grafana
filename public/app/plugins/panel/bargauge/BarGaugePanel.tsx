@@ -12,7 +12,7 @@ import { BarGauge, DataLinksContextMenu, VizRepeater, VizRepeaterRenderValueProp
 
 import { config } from 'app/core/config';
 import { BarGaugeOptions } from './types';
-import { DataLinksContextMenuApi } from '@grafana/ui/src/components/DataLinks/DataLinksContextMenu';
+import { DataLinksContextMenuApi } from '@grafana/ui';
 
 export class BarGaugePanel extends PureComponent<PanelProps<BarGaugeOptions>> {
   renderComponent = (

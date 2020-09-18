@@ -8,7 +8,7 @@ import {
   TransformerUIProps,
 } from '@grafana/data';
 
-import { ReduceTransformerOptions } from '@grafana/data/src/transformations/transformers/reduce';
+import { ReduceTransformerOptions } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 
 // TODO:  Minimal implementation, needs some <3

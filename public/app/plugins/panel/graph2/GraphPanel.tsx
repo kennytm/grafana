@@ -3,7 +3,7 @@ import { GraphWithLegend, Chart } from '@grafana/ui';
 import { PanelProps } from '@grafana/data';
 import { Options } from './types';
 import { GraphPanelController } from './GraphPanelController';
-import { LegendDisplayMode } from '@grafana/ui/src/components/Legend/Legend';
+import { LegendDisplayMode } from '@grafana/ui';
 
 interface GraphPanelProps extends PanelProps<Options> {}
 
