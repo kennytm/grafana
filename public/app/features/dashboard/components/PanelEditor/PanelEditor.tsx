@@ -84,10 +84,6 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
     });
   };
 
-  onOpenDashboardSettings = () => {
-    this.props.updateLocation({ query: { editview: 'settings' }, partial: true });
-  };
-
   onChangeTab = (tab: PanelEditorTab) => {
     this.props.updateLocation({ query: { tab: tab.id }, partial: true });
   };
@@ -255,12 +251,6 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
 
           <HorizontalGroup>
             <HorizontalGroup spacing="sm" align="center">
-              <Button
-                icon="cog"
-                onClick={this.onOpenDashboardSettings}
-                variant="secondary"
-                title="Open dashboard settings"
-              />
               <Button onClick={this.onDiscard} variant="secondary" title="Undo all changes">
                 Discard
               </Button>
