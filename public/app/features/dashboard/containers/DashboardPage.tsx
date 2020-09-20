@@ -88,7 +88,36 @@ export class DashboardPage extends PureComponent<Props, State> {
   }
 
   async componentDidMount() {
-    await this.refreshDashboard({dashboard: {title: ''}, meta: {}});
+    await this.refreshDashboard({
+      dashboard: {
+        title: 'Welcome',
+        panels: [
+          {
+            gridPos: {x: 0, y: 0, w: 24, h: 12},
+            type: 'text',
+            transparent: true,
+            title: '',
+            options: {
+              mode: 'markdown',
+              content: `
+# Grafana Snapshot Visualizer
+
+#### Click “Open snapshot” and choose a snapshot file to view it.
+
+----
+
+The snapshot file is rendered entirely in your browser, no data from the snapshot will be leaked.
+
+Grafana Snapshot Visualizer is part of the [PingCAP MetricsTool](https://metricstool.pingcap.com/). Find how to export a snapshot file there.
+
+Source code at https://github.com/kennytm/grafana.
+              `,
+            },
+          },
+        ],
+      },
+      meta: {},
+    } as DashboardDTO);
   }
 
   componentWillUnmount() {
