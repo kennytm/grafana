@@ -1,8 +1,8 @@
 {
   "author": "Grafana Labs",
   "license": "Apache-2.0",
-  "name": "@grafana/ui",
-  "version": "7.1.5",
+  "name": "@kennytm/grafana-ui",
+  "version": "0.1.0+7.1.5",
   "description": "Grafana Components Library",
   "keywords": [
     "grafana",
@@ -12,9 +12,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "http://github.com/grafana/grafana.git",
+    "url": "https://github.com/kennytm/grafana.git",
     "directory": "packages/grafana-ui"
   },
+  "homepage": "https://github.com/kennytm/grafana/tree/grafana-ui-no-bundle-jquery-7.1.5",
   "main": "src/index.ts",
   "scripts": {
     "build": "grafana-toolkit package:build --scope=ui",
