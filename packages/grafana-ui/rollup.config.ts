@@ -35,6 +35,7 @@ const buildCjsPackage = ({ env }) => {
       'monaco-editor', // Monaco should not be used directly
       'monaco-editor/esm/vs/editor/editor.api', // Monaco should not be used directly
       'react-monaco-editor',
+      'jquery',
     ],
     plugins: [
       commonjs({

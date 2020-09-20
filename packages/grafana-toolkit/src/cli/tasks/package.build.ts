@@ -90,12 +90,12 @@ const moveFiles = () => {
 };
 
 const moveStaticFiles = async (pkg: any, cwd: string) => {
-  if (pkg.name.endsWith('/ui')) {
-    const staticFiles = await globby(resolvePath(process.cwd(), 'src/**/*.+(png|svg|gif|jpg)'));
+  if (/\bui$/.test(pkg.name)) {
+    const staticFiles = await globby('src/**/*.+(png|svg|gif|jpg)');
     return useSpinner<void>(`Moving static files`, async () => {
       const promises = staticFiles.map(file => {
         return new Promise((resolve, reject) => {
-          fs.copyFile(file, `${cwd}/compiled/${file.replace(`${cwd}/src`, '')}`, (err: any) => {
+          fs.copyFile(file, file.replace(/^src/, 'compiled'), (err: any) => {
             if (err) {
               reject(err);
               return;
