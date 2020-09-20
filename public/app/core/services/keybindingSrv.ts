@@ -11,9 +11,6 @@ import { store } from 'app/store/store';
 import { AppEventEmitter, CoreEvents } from 'app/types';
 import { GrafanaRootScope } from 'app/routes/GrafanaCtrl';
 import { DashboardModel } from 'app/features/dashboard/state';
-import { ShareModal } from 'app/features/dashboard/components/ShareModal';
-import { SaveDashboardModalProxy } from 'app/features/dashboard/components/SaveDashboard/SaveDashboardModalProxy';
-import { defaultQueryParams } from 'app/features/search/reducers/searchQueryReducer';
 import { ContextSrv } from './context_srv';
 
 export class KeybindingSrv {
@@ -46,11 +43,6 @@ export class KeybindingSrv {
   setupGlobal() {
     if (!(this.$location.path() === '/login')) {
       this.bind(['?', 'h'], this.showHelpModal);
-      this.bind('g h', this.goToHome);
-      this.bind('g a', this.openAlerting);
-      this.bind('g p', this.goToProfile);
-      this.bind('s o', this.openSearch);
-      this.bind('f', this.openSearch);
       this.bind('esc', this.exit);
       this.bindGlobal('esc', this.globalEsc);
     }
@@ -80,28 +72,6 @@ export class KeybindingSrv {
 
     // ok no focused input or editor that should block this, let exist!
     this.exit();
-  }
-
-  openSearch() {
-    const search = _.extend(this.$location.search(), { search: 'open' });
-    this.$location.search(search);
-  }
-
-  closeSearch() {
-    const search = _.extend(this.$location.search(), { search: null, ...defaultQueryParams });
-    this.$location.search(search);
-  }
-
-  openAlerting() {
-    this.$location.url('/alerting');
-  }
-
-  goToHome() {
-    this.$location.url('/');
-  }
-
-  goToProfile() {
-    this.$location.url('/profile');
   }
 
   showHelpModal() {
@@ -153,10 +123,6 @@ export class KeybindingSrv {
     if (search.kiosk) {
       this.$rootScope.appEvent(CoreEvents.toggleKioskMode, { exit: true });
     }
-
-    if (search.search) {
-      this.closeSearch();
-    }
   }
 
   bind(keyArg: string | string[], fn: () => void) {
@@ -199,15 +165,6 @@ export class KeybindingSrv {
       dashboard.graphTooltip = (dashboard.graphTooltip + 1) % 3;
       appEvents.emit(CoreEvents.graphHoverClear);
       dashboard.startRefresh();
-    });
-
-    this.bind('mod+s', () => {
-      appEvents.emit(CoreEvents.showModalReact, {
-        component: SaveDashboardModalProxy,
-        props: {
-          dashboard,
-        },
-      });
     });
 
     this.bind('t z', () => {
@@ -270,37 +227,6 @@ export class KeybindingSrv {
         }
       });
     }
-
-    // delete panel
-    this.bind('p r', () => {
-      if (dashboard.canEditPanelById(dashboard.meta.focusPanelId)) {
-        appEvents.emit(CoreEvents.removePanel, dashboard.meta.focusPanelId);
-        dashboard.meta.focusPanelId = 0;
-      }
-    });
-
-    // duplicate panel
-    this.bind('p d', () => {
-      if (dashboard.canEditPanelById(dashboard.meta.focusPanelId)) {
-        const panelIndex = dashboard.getPanelInfoById(dashboard.meta.focusPanelId).index;
-        dashboard.duplicatePanel(dashboard.panels[panelIndex]);
-      }
-    });
-
-    // share panel
-    this.bind('p s', () => {
-      if (dashboard.meta.focusPanelId) {
-        const panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
-
-        appEvents.emit(CoreEvents.showModalReact, {
-          component: ShareModal,
-          props: {
-            dashboard: dashboard,
-            panel: panelInfo?.panel,
-          },
-        });
-      }
-    });
 
     // toggle panel legend
     this.bind('p l', () => {

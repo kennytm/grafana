@@ -95,17 +95,13 @@ export class InspectJSONTab extends PureComponent<Props, State> {
   };
 
   onApplyPanelModel = () => {
-    const { panel, dashboard, onClose } = this.props;
+    const { panel, onClose } = this.props;
 
     try {
-      if (!dashboard.meta.canEdit) {
-        appEvents.emit(AppEvents.alertError, ['Unable to apply']);
-      } else {
-        const updates = JSON.parse(this.state.text);
-        panel.restoreModel(updates);
-        panel.refresh();
-        appEvents.emit(AppEvents.alertSuccess, ['Panel model updated']);
-      }
+      const updates = JSON.parse(this.state.text);
+      panel.restoreModel(updates);
+      panel.refresh();
+      appEvents.emit(AppEvents.alertSuccess, ['Panel model updated']);
     } catch (err) {
       console.log('Error applyign updates', err);
       appEvents.emit(AppEvents.alertError, ['Invalid JSON text']);
@@ -115,11 +111,9 @@ export class InspectJSONTab extends PureComponent<Props, State> {
   };
 
   render() {
-    const { dashboard } = this.props;
     const { show, text } = this.state;
     const selected = options.find(v => v.value === show);
     const isPanelJSON = show === ShowContent.PanelJSON;
-    const canEdit = dashboard.meta.canEdit;
     const styles = getPanelInspectorStyles();
 
     return (
@@ -128,7 +122,7 @@ export class InspectJSONTab extends PureComponent<Props, State> {
           <Field label="Select source" className="flex-grow-1">
             <Select options={options} value={selected} onChange={this.onSelectChanged} />
           </Field>
-          {isPanelJSON && canEdit && (
+          {isPanelJSON && (
             <Button className={styles.toolbarItem} onClick={this.onApplyPanelModel}>
               Apply
             </Button>

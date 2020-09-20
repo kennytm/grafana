@@ -3,13 +3,11 @@ import $ from 'jquery';
 import coreModule from 'app/core/core_module';
 import alertDef from '../alerting/state/alertDef';
 import { DashboardSrv } from '../dashboard/services/DashboardSrv';
-import { ContextSrv } from 'app/core/services/context_srv';
 
 /** @ngInject */
 export function annotationTooltipDirective(
   $sanitize: any,
   dashboardSrv: DashboardSrv,
-  contextSrv: ContextSrv,
   $compile: any
 ) {
   function sanitizeString(str: string) {
@@ -59,7 +57,7 @@ export function annotationTooltipDirective(
       `;
 
       // Show edit icon only for users with at least Editor role
-      if (event.id && dashboard.meta.canEdit) {
+      if (event.id) {
         header += `
           <span class="pointer graph-annotation__edit-icon" ng-click="onEdit()">
             <i class="fa fa-pencil-square"></i>

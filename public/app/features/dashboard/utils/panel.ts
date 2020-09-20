@@ -20,8 +20,6 @@ import templateSrv from 'app/features/templating/template_srv';
 import { LS_PANEL_COPY_KEY, PANEL_BORDER } from 'app/core/constants';
 import { CoreEvents } from 'app/types';
 
-import { ShareModal } from 'app/features/dashboard/components/ShareModal';
-
 export const removePanel = (dashboard: DashboardModel, panel: PanelModel, ask: boolean) => {
   // confirm deletion
   if (ask !== false) {
@@ -49,16 +47,6 @@ export const duplicatePanel = (dashboard: DashboardModel, panel: PanelModel) => 
 export const copyPanel = (panel: PanelModel) => {
   store.set(LS_PANEL_COPY_KEY, JSON.stringify(panel.getSaveModel()));
   appEvents.emit(AppEvents.alertSuccess, ['Panel copied. Open Add Panel to paste']);
-};
-
-export const sharePanel = (dashboard: DashboardModel, panel: PanelModel) => {
-  appEvents.emit(CoreEvents.showModalReact, {
-    component: ShareModal,
-    props: {
-      dashboard: dashboard,
-      panel: panel,
-    },
-  });
 };
 
 export const refreshPanel = (panel: PanelModel) => {

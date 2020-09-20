@@ -2,7 +2,6 @@ import { react2AngularDirective } from 'app/core/utils/react2angular';
 import PageHeader from './components/PageHeader/PageHeader';
 import EmptyListCTA from './components/EmptyListCTA/EmptyListCTA';
 import { TagFilter } from './components/TagFilter/TagFilter';
-import { SideMenu } from './components/sidemenu/SideMenu';
 import { MetricSelect } from './components/Select/MetricSelect';
 import AppNotificationList from './components/AppNotifications/AppNotificationList';
 import {
@@ -18,13 +17,7 @@ import {
 const { SecretFormField } = LegacyForms;
 import { HelpModal } from './components/help/HelpModal';
 import { Footer } from './components/Footer/Footer';
-import { FolderPicker } from 'app/core/components/Select/FolderPicker';
-import {
-  SaveDashboardAsButtonConnected,
-  SaveDashboardButtonConnected,
-} from '../features/dashboard/components/SaveDashboard/SaveDashboardButton';
 import { VariableEditorContainer } from '../features/variables/editor/VariableEditorContainer';
-import { SearchField, SearchResults, SearchWrapper, SearchResultsFilter } from '../features/search';
 import { TimePickerSettings } from 'app/features/dashboard/components/DashboardSettings/TimePickerSettings';
 
 export function registerAngularDirectives() {
@@ -37,7 +30,6 @@ export function registerAngularDirectives() {
     ['onClick', { watchDepth: 'reference', wrapApply: true }],
   ]);
   react2AngularDirective('helpModal', HelpModal, []);
-  react2AngularDirective('sidemenu', SideMenu, []);
   react2AngularDirective('appNotificationsList', AppNotificationList, []);
   react2AngularDirective('pageHeader', PageHeader, ['model', 'noTabs']);
   react2AngularDirective('emptyListCta', EmptyListCTA, [
@@ -54,35 +46,6 @@ export function registerAngularDirectives() {
     'infoBoxTitle',
   ]);
   //Search
-  react2AngularDirective('searchField', SearchField, [
-    'query',
-    'autoFocus',
-    ['onChange', { watchDepth: 'reference' }],
-    ['onKeyDown', { watchDepth: 'reference' }],
-  ]);
-  react2AngularDirective('searchResults', SearchResults, [
-    'results',
-    'editable',
-    'selectors',
-    ['onSelectionChanged', { watchDepth: 'reference' }],
-    ['onTagSelected', { watchDepth: 'reference' }],
-    ['onFolderExpanding', { watchDepth: 'reference' }],
-    ['onToggleSelection', { watchDepth: 'reference' }],
-  ]);
-  react2AngularDirective('searchFilters', SearchResultsFilter, [
-    'allChecked',
-    'canMove',
-    'canDelete',
-    'tagFilterOptions',
-    'selectedStarredFilter',
-    'selectedTagFilter',
-    ['onSelectAllChanged', { watchDepth: 'reference' }],
-    ['deleteItem', { watchDepth: 'reference' }],
-    ['moveTo', { watchDepth: 'reference' }],
-    ['onStarredFilterChange', { watchDepth: 'reference' }],
-    ['onTagFilterChange', { watchDepth: 'reference' }],
-  ]);
-  react2AngularDirective('searchWrapper', SearchWrapper, []);
   react2AngularDirective('tagFilter', TagFilter, [
     'tags',
     ['onChange', { watchDepth: 'reference' }],
@@ -143,30 +106,6 @@ export function registerAngularDirectives() {
     'showAccessOptions',
     'dataSourceConfig',
     ['onChange', { watchDepth: 'reference', wrapApply: true }],
-  ]);
-  react2AngularDirective('folderPicker', FolderPicker, [
-    'labelClass',
-    'rootName',
-    'enableCreateNew',
-    'enableReset',
-    'initialTitle',
-    'initialFolderId',
-    'dashboardId',
-    'onCreateFolder',
-    ['enterFolderCreation', { watchDepth: 'reference', wrapApply: true }],
-    ['exitFolderCreation', { watchDepth: 'reference', wrapApply: true }],
-    ['onLoad', { watchDepth: 'reference', wrapApply: true }],
-    ['onChange', { watchDepth: 'reference', wrapApply: true }],
-  ]);
-  react2AngularDirective('saveDashboardButton', SaveDashboardButtonConnected, [
-    ['getDashboard', { watchDepth: 'reference', wrapApply: true }],
-    ['onSaveSuccess', { watchDepth: 'reference', wrapApply: true }],
-    ['dashboard', { watchDepth: 'reference', wrapApply: true }],
-  ]);
-  react2AngularDirective('saveDashboardAsButton', SaveDashboardAsButtonConnected, [
-    'variant',
-    ['getDashboard', { watchDepth: 'reference', wrapApply: true }],
-    ['onSaveSuccess', { watchDepth: 'reference', wrapApply: true }],
   ]);
   react2AngularDirective('variableEditorContainer', VariableEditorContainer, []);
   react2AngularDirective('timePickerSettings', TimePickerSettings, [

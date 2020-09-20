@@ -1,9 +1,6 @@
 import { configureStore as reduxConfigureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
-import { createLogger } from 'redux-logger';
-import { ThunkMiddleware } from 'redux-thunk';
 import { setStore } from './store';
 import { StoreState } from 'app/types/store';
-import { toggleLogActionsMiddleware } from 'app/core/middlewares/application';
 import { addReducer, createRootReducer } from '../core/reducers/root';
 import { buildInitialState } from '../core/reducers/navModel';
 
@@ -15,14 +12,6 @@ export function addRootReducer(reducers: any) {
 }
 
 export function configureStore() {
-  const logger = createLogger({
-    predicate: getState => {
-      return getState().application.logActions;
-    },
-  });
-
-  const middleware = process.env.NODE_ENV !== 'production' ? [toggleLogActionsMiddleware, logger] : [];
-
   const reduxDefaultMiddleware = getDefaultMiddleware<StoreState>({
     thunk: true,
     serializableCheck: false,
@@ -31,7 +20,7 @@ export function configureStore() {
 
   const store = reduxConfigureStore<StoreState>({
     reducer: createRootReducer(),
-    middleware: [...reduxDefaultMiddleware, ...middleware] as [ThunkMiddleware<StoreState>],
+    middleware: reduxDefaultMiddleware,
     devTools: process.env.NODE_ENV !== 'production',
     preloadedState: {
       navIndex: buildInitialState(),
@@ -42,7 +31,7 @@ export function configureStore() {
   return store;
 }
 
-/* 
+/*
 function getActionsToIgnoreSerializableCheckOn() {
   return [
     'dashboard/setPanelAngularComponent',
@@ -58,7 +47,7 @@ function getActionsToIgnoreSerializableCheckOn() {
 }
 
 function getPathsToIgnoreMutationAndSerializableCheckOn() {
-  return [    
+  return [
     'plugins.panels',
     'dashboard.panels',
     'dashboard.getModel',
@@ -75,7 +64,7 @@ function getPathsToIgnoreMutationAndSerializableCheckOn() {
     'explore.right.eventBridge',
     'explore.right.range',
     'explore.left.querySubscription',
-    'explore.right.querySubscription',    
+    'explore.right.querySubscription',
   ];
 }
 */

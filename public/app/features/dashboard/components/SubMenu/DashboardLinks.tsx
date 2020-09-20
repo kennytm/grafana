@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
 import { Icon, IconName, Tooltip } from '@grafana/ui';
-import { sanitize, sanitizeUrl } from '@grafana/data';
 import { DashboardLinksDashboard } from './DashboardLinksDashboard';
 import { getLinkSrv } from '../../../panel/panellinks/link_srv';
+import { textUtil } from '@grafana/data';
 
 import { DashboardModel } from '../../state';
 import { DashboardLink } from '../../state/DashboardModel';
@@ -29,9 +29,9 @@ export const DashboardLinks: FC<Props> = ({ dashboard, links }) => {
         }
 
         const linkElement = (
-          <a className="gf-form-label" href={sanitizeUrl(linkInfo.href)} target={link.targetBlank ? '_blank' : '_self'}>
+          <a className="gf-form-label" href={textUtil.sanitizeUrl(linkInfo.href)} target={link.targetBlank ? '_blank' : '_self'}>
             <Icon name={iconMap[link.icon] as IconName} style={{ marginRight: '4px' }} />
-            <span>{sanitize(linkInfo.title)}</span>
+            <span>{textUtil.sanitize(linkInfo.title)}</span>
           </a>
         );
 

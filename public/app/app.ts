@@ -32,7 +32,7 @@ import {
 } from '@grafana/data';
 import appEvents from 'app/core/app_events';
 import { checkBrowserCompatibility } from 'app/core/utils/browser';
-import { importPluginModule } from 'app/features/plugins/plugin_loader';
+import { initializeBuiltinPlugins } from 'app/features/plugins/plugin_loader';
 import { angularModules, coreModule } from 'app/core/core_module';
 import { registerAngularDirectives } from 'app/core/core';
 import { setupAngularRoutes } from 'app/routes/routes';
@@ -44,7 +44,6 @@ import 'app/routes/GrafanaCtrl';
 import 'app/features/all';
 import { getStandardFieldConfigs, getStandardOptionEditors, getScrollbarWidth } from '@grafana/ui';
 import { getDefaultVariableAdapters, variableAdapters } from './features/variables/adapters';
-import { initDevFeatures } from './dev';
 import { getStandardTransformers } from 'app/core/utils/standardTransformers';
 
 // add move to lodash for backward compatabiltiy
@@ -59,10 +58,6 @@ const extensionsIndex = (require as any).context('.', true, /extensions\/index.t
 extensionsIndex.keys().forEach((key: any) => {
   extensionsIndex(key);
 });
-
-if (process.env.NODE_ENV === 'development') {
-  initDevFeatures();
-}
 
 export class GrafanaApp {
   registerFunctions: any;
@@ -119,24 +114,6 @@ export class GrafanaApp {
         this.registerFunctions.factory = $provide.factory;
         this.registerFunctions.service = $provide.service;
         this.registerFunctions.filter = $filterProvider.register;
-
-        $provide.decorator('$http', [
-          '$delegate',
-          '$templateCache',
-          ($delegate: any, $templateCache: any) => {
-            const get = $delegate.get;
-            $delegate.get = (url: string, config: any) => {
-              if (url.match(/\.html$/)) {
-                // some template's already exist in the cache
-                if (!$templateCache.get(url)) {
-                  url += '?v=' + new Date().getTime();
-                }
-              }
-              return get(url, config);
-            };
-            return $delegate;
-          },
-        ]);
       }
     );
 
@@ -182,9 +159,7 @@ export class GrafanaApp {
     });
 
     // Preload selected app plugins
-    for (const modulePath of config.pluginsToPreload) {
-      importPluginModule(modulePath);
-    }
+    initializeBuiltinPlugins();
   }
 
   initEchoSrv() {

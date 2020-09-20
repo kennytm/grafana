@@ -7,7 +7,6 @@ import classNames from 'classnames';
 import sizeMe from 'react-sizeme';
 
 // Components
-import { AddPanelWidget } from '../components/AddPanelWidget';
 import { DashboardRow } from '../components/DashboardRow';
 
 // Types
@@ -261,10 +260,6 @@ export class DashboardGrid extends PureComponent<Props> {
       return <DashboardRow panel={panel} dashboard={this.props.dashboard} />;
     }
 
-    if (panel.type === 'add-panel') {
-      return <AddPanelWidget panel={panel} dashboard={this.props.dashboard} />;
-    }
-
     return (
       <DashboardPanel
         panel={panel}
@@ -277,14 +272,14 @@ export class DashboardGrid extends PureComponent<Props> {
   }
 
   render() {
-    const { dashboard, viewPanel } = this.props;
+    const { viewPanel } = this.props;
 
     return (
       <SizedReactLayoutGrid
         className={classNames({ layout: true })}
         layout={this.buildLayout()}
-        isResizable={dashboard.meta.canEdit}
-        isDraggable={dashboard.meta.canEdit}
+        isResizable={true}
+        isDraggable={true}
         onLayoutChange={this.onLayoutChange}
         onWidthChange={this.onWidthChange}
         onDragStop={this.onDragStop}

@@ -4,7 +4,7 @@ import { css } from 'emotion';
 
 // Utils & Services
 import { PanelPlugin } from '@grafana/data';
-import { stylesFactory, styleMixins, Icon, IconName } from '@grafana/ui';
+import { stylesFactory, mixins as styleMixins, Icon, IconName } from '@grafana/ui';
 import config from 'app/core/config';
 
 // Types

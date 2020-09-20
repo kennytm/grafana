@@ -38,7 +38,7 @@ export class Branding {
   static LoginBackground = LoginBackground;
   static MenuLogo = MenuLogo;
   static LoginBoxBackground = LoginBoxBackground;
-  static AppTitle = 'Grafana';
+  static AppTitle = 'Grafana Snapshot Viewer';
   static LoginTitle = 'Welcome to Grafana';
   static GetLoginSubTitle = () => {
     const slogans = [

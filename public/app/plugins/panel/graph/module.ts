@@ -141,6 +141,11 @@ export class GraphCtrl extends MetricsPanelCtrl {
   /** @ngInject */
   constructor($scope: any, $injector: auto.IInjectorService, private annotationsSrv: AnnotationsSrv) {
     super($scope, $injector);
+    this.contextMenuCtrl = new GraphContextMenuCtrl($scope);
+  }
+
+  $onInit() {
+    super.$onInit();
 
     _.defaults(this.panel, this.panelDefaults);
     _.defaults(this.panel.tooltip, this.panelDefaults.tooltip);
@@ -150,7 +155,6 @@ export class GraphCtrl extends MetricsPanelCtrl {
 
     this.useDataFrames = true;
     this.processor = new DataProcessor(this.panel);
-    this.contextMenuCtrl = new GraphContextMenuCtrl($scope);
 
     this.events.on(PanelEvents.render, this.onRender.bind(this));
     this.events.on(PanelEvents.dataFramesReceived, this.onDataFramesReceived.bind(this));

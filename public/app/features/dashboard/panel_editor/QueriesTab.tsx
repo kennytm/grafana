@@ -1,11 +1,8 @@
 // Libraries
 import React, { PureComponent } from 'react';
 // Components
-import { DataSourcePicker } from 'app/core/components/Select/DataSourcePicker';
-import { QueryOptions } from './QueryOptions';
-import { Button, CustomScrollbar, HorizontalGroup, Modal, stylesFactory, Field } from '@grafana/ui';
+import { Button, CustomScrollbar, Modal, stylesFactory } from '@grafana/ui';
 import { getLocationSrv, getDataSourceSrv } from '@grafana/runtime';
-import { QueryEditorRows } from './QueryEditorRows';
 // Services
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { backendSrv } from 'app/core/services/backend_srv';
@@ -21,10 +18,8 @@ import {
   PanelData,
   DataSourceApi,
 } from '@grafana/data';
-import { PluginHelp } from 'app/core/components/PluginHelp/PluginHelp';
 import { addQuery } from 'app/core/utils/query';
 import { Unsubscribable } from 'rxjs';
-import { DashboardQueryEditor, isSharedDashboardQuery } from 'app/plugins/datasource/dashboard';
 import { expressionDatasource, ExpressionDatasourceID } from 'app/features/expressions/ExpressionDatasource';
 import { css } from 'emotion';
 import { selectors } from '@grafana/e2e-selectors';
@@ -44,7 +39,6 @@ interface State {
   isAddingMixed: boolean;
   scrollTop: number;
   data: PanelData;
-  isHelpOpen: boolean;
 }
 
 export class QueriesTab extends PureComponent<Props, State> {
@@ -58,7 +52,6 @@ export class QueriesTab extends PureComponent<Props, State> {
     helpContent: null,
     isPickerOpen: false,
     isAddingMixed: false,
-    isHelpOpen: false,
     scrollTop: 0,
     data: {
       state: LoadingState.NotStarted,
@@ -185,8 +178,7 @@ export class QueriesTab extends PureComponent<Props, State> {
   };
 
   renderTopSection(styles: QueriesTabStyls) {
-    const { panel } = this.props;
-    const { dataSourceItem, data, dataSource, dataSourceError } = this.state;
+    const { dataSource } = this.state;
 
     if (!dataSource) {
       return null;
@@ -195,26 +187,6 @@ export class QueriesTab extends PureComponent<Props, State> {
     return (
       <div>
         <div className={styles.dataSourceRow}>
-          <div className={styles.dataSourceRowItem}>
-            <Field invalid={!!dataSourceError} error={dataSourceError}>
-              <DataSourcePicker
-                datasources={this.datasources}
-                onChange={this.onChangeDataSource}
-                current={dataSourceItem}
-              />
-            </Field>
-          </div>
-          <div className={styles.dataSourceRowItem}>
-            <Button
-              variant="secondary"
-              icon="question-circle"
-              title="Open data source help"
-              onClick={this.onOpenHelp}
-            />
-          </div>
-          <div className={styles.dataSourceRowItemOptions}>
-            <QueryOptions panel={panel} dataSource={dataSource} data={data} />
-          </div>
           <div className={styles.dataSourceRowItem}>
             <Button
               variant="secondary"
@@ -228,31 +200,6 @@ export class QueriesTab extends PureComponent<Props, State> {
       </div>
     );
   }
-
-  onOpenHelp = () => {
-    this.setState({ isHelpOpen: true });
-  };
-
-  onCloseHelp = () => {
-    this.setState({ isHelpOpen: false });
-  };
-
-  renderMixedPicker = () => {
-    // We cannot filter on mixed flag as some mixed data sources like external plugin
-    // meta queries data source is mixed but also supports it's own queries
-    const filteredDsList = this.datasources.filter(ds => ds.meta.id !== 'mixed');
-
-    return (
-      <DataSourcePicker
-        datasources={filteredDsList}
-        onChange={this.onAddMixedQuery}
-        current={null}
-        autoFocus={true}
-        onBlur={this.onMixedPickerBlur}
-        openMenuOnFocus={true}
-      />
-    );
-  };
 
   onAddMixedQuery = (datasource: any) => {
     this.props.panel.targets = addQuery(this.props.panel.targets, { datasource: datasource.name });
@@ -274,57 +221,8 @@ export class QueriesTab extends PureComponent<Props, State> {
     this.setState({ scrollTop: target.scrollTop });
   };
 
-  renderQueries() {
-    const { panel, dashboard } = this.props;
-    const { dataSourceItem, data } = this.state;
-
-    if (isSharedDashboardQuery(dataSourceItem.name)) {
-      return <DashboardQueryEditor panel={panel} panelData={data} onChange={query => this.onUpdateQueries([query])} />;
-    }
-
-    return (
-      <div aria-label={selectors.components.QueryTab.content}>
-        <QueryEditorRows
-          queries={panel.targets}
-          datasource={dataSourceItem}
-          onChangeQueries={this.onUpdateQueries}
-          onScrollBottom={this.onScrollBottom}
-          panel={panel}
-          dashboard={dashboard}
-          data={data}
-        />
-      </div>
-    );
-  }
-
-  renderAddQueryRow() {
-    const { dataSourceItem, isAddingMixed } = this.state;
-    const showAddButton = !(isAddingMixed || isSharedDashboardQuery(dataSourceItem.name));
-
-    return (
-      <HorizontalGroup spacing="md" align="flex-start">
-        {showAddButton && (
-          <Button
-            icon="plus"
-            onClick={this.onAddQueryClick}
-            variant="secondary"
-            aria-label={selectors.components.QueryTab.addQuery}
-          >
-            Query
-          </Button>
-        )}
-        {isAddingMixed && this.renderMixedPicker()}
-        {config.featureToggles.expressions && (
-          <Button icon="plus" onClick={this.onAddExpressionClick} variant="secondary">
-            Expression
-          </Button>
-        )}
-      </HorizontalGroup>
-    );
-  }
-
   render() {
-    const { scrollTop, isHelpOpen } = this.state;
+    const { scrollTop } = this.state;
     const styles = getStyles();
 
     return (
@@ -337,14 +235,6 @@ export class QueriesTab extends PureComponent<Props, State> {
       >
         <div className={styles.innerWrapper}>
           {this.renderTopSection(styles)}
-          <div className={styles.queriesWrapper}>{this.renderQueries()}</div>
-          {this.renderAddQueryRow()}
-
-          {isHelpOpen && (
-            <Modal title="Data source help" isOpen={true} onDismiss={this.onCloseHelp}>
-              <PluginHelp plugin={this.state.dataSourceItem.meta} type="query_help" />
-            </Modal>
-          )}
         </div>
       </CustomScrollbar>
     );

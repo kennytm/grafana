@@ -5,6 +5,8 @@ import 'vendor/flot/jquery.flot';
 import 'vendor/flot/jquery.flot.gauge';
 import 'app/features/panel/panellinks/link_srv';
 
+import template from './template';
+
 import {
   DataFrame,
   DisplayValue,
@@ -48,7 +50,7 @@ export interface ShowData {
 }
 
 class SingleStatCtrl extends MetricsPanelCtrl {
-  static templateUrl = 'module.html';
+  static template = template;
 
   data: Partial<ShowData> = {};
 
@@ -121,6 +123,11 @@ class SingleStatCtrl extends MetricsPanelCtrl {
   /** @ngInject */
   constructor($scope: any, $injector: auto.IInjectorService, private linkSrv: LinkSrv, private $sanitize: any) {
     super($scope, $injector);
+  }
+
+  $onInit() {
+    super.$onInit();
+
     _.defaults(this.panel, this.panelDefaults);
 
     this.events.on(PanelEvents.dataFramesReceived, this.onFramesReceived.bind(this));

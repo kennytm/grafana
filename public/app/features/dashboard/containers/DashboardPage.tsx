@@ -20,6 +20,7 @@ import { notifyApp, updateLocation } from 'app/core/actions';
 // Types
 import {
   AppNotificationSeverity,
+  DashboardDTO,
   DashboardInitError,
   DashboardInitPhase,
   DashboardRouteInfo,
@@ -77,17 +78,17 @@ export class DashboardPage extends PureComponent<Props, State> {
     rememberScrollTop: 0,
   };
 
-  async componentDidMount() {
+  async refreshDashboard(dashDTO: DashboardDTO) {
+    this.props.cleanUpDashboardAndVariables();
     this.props.initDashboard({
       $injector: this.props.$injector,
       $scope: this.props.$scope,
-      urlSlug: this.props.urlSlug,
-      urlUid: this.props.urlUid,
-      urlType: this.props.urlType,
-      urlFolderId: this.props.urlFolderId,
-      routeInfo: this.props.routeInfo,
-      fixUrl: true,
+      dashDTO,
     });
+  }
+
+  async componentDidMount() {
+    await this.refreshDashboard({dashboard: {title: ''}, meta: {}});
   }
 
   componentWillUnmount() {
@@ -197,28 +198,6 @@ export class DashboardPage extends PureComponent<Props, State> {
     this.setState({ scrollTop: target.scrollTop, updateScrollTop: undefined });
   };
 
-  onAddPanel = () => {
-    const { dashboard } = this.props;
-
-    if (!dashboard) {
-      return;
-    }
-
-    // Return if the "Add panel" exists already
-    if (dashboard.panels.length > 0 && dashboard.panels[0].type === 'add-panel') {
-      return;
-    }
-
-    dashboard.addPanel({
-      type: 'add-panel',
-      gridPos: { x: 0, y: 0, w: 12, h: 8 },
-      title: 'Panel Title',
-    });
-
-    // scroll to top after adding panel
-    this.setState({ updateScrollTop: 0 });
-  };
-
   cancelVariables = () => {
     this.props.updateLocation({ path: '/' });
   };
@@ -303,7 +282,7 @@ export class DashboardPage extends PureComponent<Props, State> {
 
     return (
       <div className="dashboard-container">
-        <DashNav dashboard={dashboard} isFullscreen={!!viewPanel} $injector={$injector} onAddPanel={this.onAddPanel} />
+        <DashNav dashboard={dashboard} isFullscreen={!!viewPanel} $injector={$injector} onUploadSnapshot={(dto: DashboardDTO) => this.refreshDashboard(dto)} />
 
         <div className="dashboard-scroll">
           <CustomScrollbar
@@ -337,9 +316,6 @@ export class DashboardPage extends PureComponent<Props, State> {
 }
 
 export const mapStateToProps = (state: StoreState) => ({
-  urlUid: state.location.routeParams.uid,
-  urlSlug: state.location.routeParams.slug,
-  urlType: state.location.routeParams.type,
   editview: state.location.query.editview,
   urlPanelId: state.location.query.panelId,
   urlFolderId: state.location.query.folderId,

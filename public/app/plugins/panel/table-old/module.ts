@@ -11,8 +11,10 @@ import { dispatch } from 'app/store/store';
 import { ComponentType } from 'react';
 import { applyFilterFromTable } from 'app/features/variables/adhoc/actions';
 
+import template from './template';
+
 export class TablePanelCtrl extends MetricsPanelCtrl {
-  static templateUrl = 'module.html';
+  static template = template;
 
   pageIndex: number;
   dataRaw: any;
@@ -53,6 +55,10 @@ export class TablePanelCtrl extends MetricsPanelCtrl {
   /** @ngInject */
   constructor($scope: any, $injector: any, private annotationsSrv: any, private $sanitize: any) {
     super($scope, $injector);
+  }
+
+  $onInit() {
+    super.$onInit();
 
     this.pageIndex = 0;
 

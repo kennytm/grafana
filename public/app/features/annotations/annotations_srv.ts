@@ -9,7 +9,7 @@ import { dedupAnnotations } from './events_processing';
 // Types
 import { DashboardModel, PanelModel } from '../dashboard/state';
 import { AnnotationEvent, AppEvents, DataSourceApi, PanelEvents, TimeRange } from '@grafana/data';
-import { getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
+import { getDataSourceSrv } from '@grafana/runtime';
 import { appEvents } from 'app/core/core';
 import { getTimeSrv } from '../dashboard/services/TimeSrv';
 
@@ -32,7 +32,7 @@ export class AnnotationsSrv {
   }
 
   getAnnotations(options: { dashboard: DashboardModel; panel: PanelModel; range: TimeRange }) {
-    return Promise.all([this.getGlobalAnnotations(options), this.getAlertStates(options)])
+    return Promise.all([this.getGlobalAnnotations(options)])
       .then(results => {
         // combine the annotations and flatten results
         let annotations: AnnotationEvent[] = flattenDeep(results[0]);
@@ -50,12 +50,9 @@ export class AnnotationsSrv {
 
         annotations = dedupAnnotations(annotations);
 
-        // look for alert state for this panel
-        const alertState: any = results[1].find((res: any) => res.panelId === panelFilterId);
-
         return {
           annotations: annotations,
-          alertState: alertState,
+          alertState: [],
         };
       })
       .catch(err => {
@@ -66,35 +63,6 @@ export class AnnotationsSrv {
         appEvents.emit(AppEvents.alertError, ['Annotation Query Failed', err.message || err]);
         return [];
       });
-  }
-
-  getAlertStates(options: any) {
-    if (!options.dashboard.id) {
-      return Promise.resolve([]);
-    }
-
-    // ignore if no alerts
-    if (options.panel && !options.panel.alert) {
-      return Promise.resolve([]);
-    }
-
-    if (options.range.raw.to !== 'now') {
-      return Promise.resolve([]);
-    }
-
-    if (this.alertStatesPromise) {
-      return this.alertStatesPromise;
-    }
-
-    this.alertStatesPromise = getBackendSrv().get(
-      '/api/alerts/states-for-dashboard',
-      {
-        dashboardId: options.dashboard.id,
-      },
-      `get-alert-states-${options.dashboard.id}`
-    );
-
-    return this.alertStatesPromise;
   }
 
   getGlobalAnnotations(options: { dashboard: DashboardModel; panel: PanelModel; range: TimeRange }) {
@@ -142,23 +110,6 @@ export class AnnotationsSrv {
     this.datasourcePromises = Promise.all(dsPromises);
     this.globalAnnotationsPromise = Promise.all(promises);
     return this.globalAnnotationsPromise;
-  }
-
-  saveAnnotationEvent(annotation: AnnotationEvent) {
-    this.globalAnnotationsPromise = null;
-    return getBackendSrv().post('/api/annotations', annotation);
-  }
-
-  updateAnnotationEvent(annotation: AnnotationEvent) {
-    this.globalAnnotationsPromise = null;
-    return getBackendSrv().put(`/api/annotations/${annotation.id}`, annotation);
-  }
-
-  deleteAnnotationEvent(annotation: AnnotationEvent) {
-    this.globalAnnotationsPromise = null;
-    const deleteUrl = `/api/annotations/${annotation.id}`;
-
-    return getBackendSrv().delete(deleteUrl);
   }
 
   translateQueryResult(annotation: any, results: any) {

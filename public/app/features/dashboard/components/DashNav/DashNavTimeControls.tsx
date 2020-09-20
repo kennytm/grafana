@@ -1,6 +1,6 @@
 // Libaries
 import React, { Component } from 'react';
-import { dateMath, GrafanaTheme, TimeZone } from '@grafana/data';
+import { dateMath, GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 
 // Types
@@ -8,16 +8,12 @@ import { DashboardModel } from '../../state';
 import { LocationState, CoreEvents } from 'app/types';
 import { TimeRange } from '@grafana/data';
 
-// State
-import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
-
 // Components
-import { RefreshPicker, withTheme, stylesFactory, Themeable } from '@grafana/ui';
+import { withTheme, stylesFactory, Themeable } from '@grafana/ui';
 import { TimePickerWithHistory } from 'app/core/components/TimePicker/TimePickerWithHistory';
 
 // Utils & Services
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
-import { defaultIntervals } from '@grafana/ui';
 import { appEvents } from 'app/core/core';
 
 const getStyles = stylesFactory((theme: GrafanaTheme) => {
@@ -32,7 +28,6 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
 export interface Props extends Themeable {
   dashboard: DashboardModel;
   location: LocationState;
-  onChangeTimeZone: typeof updateTimeZoneForSession;
 }
 class UnthemedDashNavTimeControls extends Component<Props> {
   componentDidMount() {
@@ -53,16 +48,6 @@ class UnthemedDashNavTimeControls extends Component<Props> {
   get refreshParamInUrl(): string {
     return this.props.location.query.refresh as string;
   }
-
-  onChangeRefreshInterval = (interval: string) => {
-    getTimeSrv().setAutoRefresh(interval);
-    this.forceUpdate();
-  };
-
-  onRefresh = () => {
-    getTimeSrv().refreshDashboard();
-    return Promise.resolve();
-  };
 
   onMoveBack = () => {
     appEvents.emit(CoreEvents.shiftTime, -1);
@@ -87,20 +72,12 @@ class UnthemedDashNavTimeControls extends Component<Props> {
     getTimeSrv().setTime(nextRange);
   };
 
-  onChangeTimeZone = (timeZone: TimeZone) => {
-    this.props.dashboard.timezone = timeZone;
-    this.props.onChangeTimeZone(timeZone);
-    this.onRefresh();
-  };
-
   onZoom = () => {
     appEvents.emit(CoreEvents.zoomOut, 2);
   };
 
   render() {
     const { dashboard, theme } = this.props;
-    const { refresh_intervals } = dashboard.timepicker;
-    const intervals = getTimeSrv().getValidIntervals(refresh_intervals || defaultIntervals);
 
     const timePickerValue = getTimeSrv().timeRange();
     const timeZone = dashboard.getTimezone();
@@ -115,14 +92,6 @@ class UnthemedDashNavTimeControls extends Component<Props> {
           onMoveBackward={this.onMoveBack}
           onMoveForward={this.onMoveForward}
           onZoom={this.onZoom}
-          onChangeTimeZone={this.onChangeTimeZone}
-        />
-        <RefreshPicker
-          onIntervalChanged={this.onChangeRefreshInterval}
-          onRefresh={this.onRefresh}
-          value={dashboard.refresh}
-          intervals={intervals}
-          tooltip="Refresh dashboard"
         />
       </div>
     );

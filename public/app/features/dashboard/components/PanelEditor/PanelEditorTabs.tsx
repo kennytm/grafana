@@ -6,7 +6,6 @@ import { PanelEditorTab, PanelEditorTabId } from './types';
 import { DashboardModel } from '../../state';
 import { QueriesTab } from '../../panel_editor/QueriesTab';
 import { PanelModel } from '../../state/PanelModel';
-import { AlertTab } from 'app/features/alerting/AlertTab';
 import { TransformationsEditor } from '../TransformationsEditor/TransformationsEditor';
 
 interface PanelEditorTabsProps {
@@ -59,7 +58,6 @@ export const PanelEditorTabs: React.FC<PanelEditorTabsProps> = ({ panel, dashboa
       </TabsBar>
       <TabContent className={styles.tabContent}>
         {activeTab.id === PanelEditorTabId.Query && <QueriesTab panel={panel} dashboard={dashboard} />}
-        {activeTab.id === PanelEditorTabId.Alert && <AlertTab panel={panel} dashboard={dashboard} />}
         {activeTab.id === PanelEditorTabId.Transform && <TransformationsEditor panel={panel} />}
       </TabContent>
     </div>

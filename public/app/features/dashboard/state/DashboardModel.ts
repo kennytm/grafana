@@ -161,20 +161,6 @@ export class DashboardModel {
 
   private initMeta(meta: DashboardMeta) {
     meta = meta || {};
-
-    meta.canShare = meta.canShare !== false;
-    meta.canSave = meta.canSave !== false;
-    meta.canStar = meta.canStar !== false;
-    meta.canEdit = meta.canEdit !== false;
-    meta.showSettings = meta.canEdit;
-    meta.canMakeEditable = meta.canSave && !this.editable;
-
-    if (!this.editable) {
-      meta.canEdit = false;
-      meta.canDelete = false;
-      meta.canSave = false;
-    }
-
     this.meta = meta;
   }
 
@@ -367,7 +353,7 @@ export class DashboardModel {
   }
 
   canEditPanel(panel?: PanelModel): boolean {
-    return this.meta.canEdit && panel && !panel.repeatPanelId;
+    return panel && !panel.repeatPanelId;
   }
 
   canEditPanelById(id: number): boolean {

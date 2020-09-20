@@ -32,14 +32,13 @@ module.exports = merge(common, {
               // Note: order is top-to-bottom and/or left-to-right
               plugins: [
                 [
-                  require('@rtsao/plugin-proposal-class-properties'),
+                  require('@babel/plugin-proposal-class-properties'),
                   {
                     loose: true,
                   },
                 ],
                 '@babel/plugin-proposal-nullish-coalescing-operator',
                 '@babel/plugin-proposal-optional-chaining',
-                '@babel/plugin-syntax-dynamic-import', // needed for `() => import()` in routes.ts
                 'angularjs-annotate',
               ],
               // Note: order is bottom-to-top and/or right-to-left

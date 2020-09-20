@@ -175,12 +175,7 @@ class GraphElement {
       return;
     }
 
-    if ((ranges.ctrlKey || ranges.metaKey) && (this.dashboard.meta.canEdit || this.dashboard.meta.canMakeEditable)) {
-      // Add annotation
-      setTimeout(() => {
-        this.eventManager.updateTime(ranges.xaxis);
-      }, 100);
-    } else {
+    {
       this.scope.$apply(() => {
         this.timeSrv.setTime({
           from: toUtc(ranges.xaxis.from),
@@ -239,16 +234,7 @@ class GraphElement {
       return;
     }
 
-    if ((pos.ctrlKey || pos.metaKey) && (this.dashboard.meta.canEdit || this.dashboard.meta.canMakeEditable)) {
-      // Skip if range selected (added in "plotselected" event handler)
-      if (pos.x !== pos.x1) {
-        return;
-      }
-      setTimeout(() => {
-        this.eventManager.updateTime({ from: pos.x, to: null });
-      }, 100);
-      return;
-    } else {
+    {
       this.tooltip.clear(this.plot);
       let linksSupplier: LinkModelSupplier<FieldDisplay> | undefined;
 

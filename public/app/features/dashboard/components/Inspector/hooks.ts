@@ -56,7 +56,7 @@ export const useInspectTabs = (
       tabs.push({ label: 'Error', value: InspectTab.Error });
     }
 
-    if (dashboard.meta.canEdit && supportsDataQuery(plugin)) {
+    if (supportsDataQuery(plugin)) {
       tabs.push({ label: 'Query', value: InspectTab.Query });
     }
     return tabs;

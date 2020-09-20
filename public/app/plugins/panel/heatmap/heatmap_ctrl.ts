@@ -18,6 +18,8 @@ import { DataProcessor } from '../graph/data_processor';
 import { LegacyResponseData, PanelEvents, DataFrame } from '@grafana/data';
 import { CoreEvents } from 'app/types';
 
+import template from './template';
+
 const X_BUCKET_NUMBER_DEFAULT = 30;
 const Y_BUCKET_NUMBER_DEFAULT = 10;
 
@@ -109,7 +111,7 @@ const colorSchemes = [
 const dsSupportHistogramSort = ['elasticsearch'];
 
 export class HeatmapCtrl extends MetricsPanelCtrl {
-  static templateUrl = 'module.html';
+  static template = template;
 
   opacityScales: any = [];
   colorModes: any = [];
@@ -129,7 +131,6 @@ export class HeatmapCtrl extends MetricsPanelCtrl {
     super($scope, $injector);
     this.selectionActivated = false;
 
-    _.defaultsDeep(this.panel, panelDefaults);
     this.opacityScales = opacityScales;
     this.colorModes = colorModes;
     this.colorSchemes = colorSchemes;
@@ -140,6 +141,12 @@ export class HeatmapCtrl extends MetricsPanelCtrl {
       xaxis: { mode: 'custom' }, // NOT: 'histogram' :)
       aliasColors: {}, // avoids null reference
     });
+  }
+
+  $onInit() {
+    super.$onInit();
+
+    _.defaultsDeep(this.panel, panelDefaults);
 
     // Bind grafana panel events
     this.events.on(PanelEvents.render, this.onRender.bind(this));

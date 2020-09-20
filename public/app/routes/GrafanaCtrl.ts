@@ -26,7 +26,6 @@ import { setLinkSrv, LinkSrv } from 'app/features/panel/panellinks/link_srv';
 import { UtilSrv } from 'app/core/services/util_srv';
 import { ContextSrv } from 'app/core/services/context_srv';
 import { BridgeSrv } from 'app/core/services/bridge_srv';
-import { PlaylistSrv } from 'app/features/playlist/playlist_srv';
 import { DashboardSrv, setDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { ILocationService, ITimeoutService, IRootScopeService, IAngularEvent } from 'angular';
 import { AppEvent, AppEvents, locationUtil } from '@grafana/data';
@@ -144,10 +143,7 @@ function setViewModeBodyClass(body: JQuery, mode: KioskUrlValue) {
 
 /** @ngInject */
 export function grafanaAppDirective(
-  playlistSrv: PlaylistSrv,
-  contextSrv: ContextSrv,
   $timeout: ITimeoutService,
-  $rootScope: IRootScopeService,
   $location: ILocationService
 ) {
   return {

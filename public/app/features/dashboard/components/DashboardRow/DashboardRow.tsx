@@ -72,7 +72,6 @@ export class DashboardRow extends React.Component<DashboardRowProps, any> {
     const title = templateSrv.replaceWithText(this.props.panel.title, this.props.panel.scopedVars);
     const count = this.props.panel.panels ? this.props.panel.panels.length : 0;
     const panels = count === 1 ? 'panel' : 'panels';
-    const canEdit = this.props.dashboard.meta.canEdit === true;
 
     return (
       <div className={classes}>
@@ -83,24 +82,11 @@ export class DashboardRow extends React.Component<DashboardRowProps, any> {
             ({count} {panels})
           </span>
         </a>
-        {canEdit && (
-          <div className="dashboard-row__actions">
-            <RowOptionsButton
-              title={this.props.panel.title}
-              repeat={this.props.panel.repeat}
-              onUpdate={this.onUpdate}
-            />
-            <a className="pointer" onClick={this.onDelete}>
-              <Icon name="trash-alt" />
-            </a>
-          </div>
-        )}
         {this.state.collapsed === true && (
           <div className="dashboard-row__toggle-target" onClick={this.onToggle}>
             &nbsp;
           </div>
         )}
-        {canEdit && <div className="dashboard-row__drag grid-drag-handle" />}
       </div>
     );
   }

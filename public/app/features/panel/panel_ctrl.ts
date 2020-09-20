@@ -31,16 +31,18 @@ export class PanelCtrl {
     this.$scope = $scope;
     this.$timeout = $injector.get('$timeout');
     this.editorTabs = [];
-    this.events = this.panel.events;
     this.timing = {}; // not used but here to not break plugins
 
+    $scope.$on(PanelEvents.componentDidMount.name, () => this.panelDidMount());
+  }
+
+  $onInit() {
+    this.events = this.panel.events;
     const plugin = config.panels[this.panel.type];
     if (plugin) {
       this.pluginId = plugin.id;
       this.pluginName = plugin.name;
     }
-
-    $scope.$on(PanelEvents.componentDidMount.name, () => this.panelDidMount());
   }
 
   panelDidMount() {

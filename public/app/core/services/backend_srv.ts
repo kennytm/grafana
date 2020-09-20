@@ -144,40 +144,7 @@ export class BackendSrv implements BackendService {
   };
 
   async request(options: BackendSrvRequest): Promise<any> {
-    // A requestId is a unique identifier for a particular query.
-    // Every observable below has a takeUntil that subscribes to this.inFlightRequests and
-    // will cancel/unsubscribe that observable when a new datasourceRequest with the same requestId is made
-    if (options.requestId) {
-      this.inFlightRequests.next(options.requestId);
-    }
-
-    options = this.parseRequestOptions(options, this.dependencies.contextSrv.user?.orgId);
-
-    const fromFetchStream = this.getFromFetchStream(options);
-    const failureStream = fromFetchStream.pipe(this.toFailureStream(options));
-    const successStream = fromFetchStream.pipe(
-      filter(response => response.ok === true),
-      map(response => {
-        const fetchSuccessResponse: SuccessResponse = response.data;
-        return fetchSuccessResponse;
-      }),
-      tap(response => {
-        if (options.method !== 'GET' && response?.message && options.showSuccessAlert !== false) {
-          this.dependencies.appEvents.emit(AppEvents.alertSuccess, [response.message]);
-        }
-      })
-    );
-
-    return merge(successStream, failureStream)
-      .pipe(
-        catchError((err: ErrorResponse) => {
-          // this setTimeout hack enables any caller catching this err to set isHandled to true
-          setTimeout(() => this.requestErrorHandler(err), 50);
-          return throwError(err);
-        }),
-        this.handleStreamCancellation(options, CancellationType.request)
-      )
-      .toPromise();
+    return Promise.reject(`HTTP Request disabled ${JSON.stringify(options)}`);
   }
 
   resolveCancelerIfExists(requestId: string) {

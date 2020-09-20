@@ -5,7 +5,6 @@ import { Counter, DataLinksInlineEditor, Field, Input, RadioButtonGroup, Select,
 import { getPanelLinksVariableSuggestions } from '../../../panel/panellinks/link_srv';
 import { PanelOptionsEditor } from './PanelOptionsEditor';
 import { AngularPanelOptions } from './AngularPanelOptions';
-import { VisualizationTab } from './VisualizationTab';
 import { OptionsGroup } from './OptionsGroup';
 import { RepeatRowSelect } from '../RepeatRowSelect/RepeatRowSelect';
 
@@ -61,12 +60,6 @@ export const PanelOptionsTab: FC<Props> = ({
       <Field label="Transparent" description="Display panel without a background.">
         <Switch value={panel.transparent} onChange={e => onPanelConfigChange('transparent', e.currentTarget.checked)} />
       </Field>
-    </OptionsGroup>
-  );
-
-  elements.push(
-    <OptionsGroup title="Visualization" id="Panel type" key="Panel type" defaultToClosed onToggle={focusVisPickerInput}>
-      {toggleExpand => <VisualizationTab panel={panel} ref={visTabInputRef} onToggleOptionGroup={toggleExpand} />}
     </OptionsGroup>
   );
 
