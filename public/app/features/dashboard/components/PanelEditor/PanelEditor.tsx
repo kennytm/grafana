@@ -72,6 +72,8 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
       query: { editPanel: null, tab: null },
       partial: true,
     });
+    const dashboard = this.props.dashboard;
+    setTimeout(() => dashboard.startRefresh(), 100);
   };
 
   onDiscard = () => {
