@@ -35,13 +35,15 @@ export class DashLinksEditorCtrl {
 
   /** @ngInject */
   constructor($scope: any, $rootScope: GrafanaRootScope) {
-    this.iconMap = iconMap;
-    this.dashboard.links = this.dashboard.links || [];
-    this.mode = 'list';
-
     $scope.$on('$destroy', () => {
       $rootScope.appEvent(CoreEvents.dashLinksUpdated);
     });
+  }
+
+  $onInit() {
+    this.iconMap = iconMap;
+    this.dashboard.links = this.dashboard.links || [];
+    this.mode = 'list';
   }
 
   backToList() {

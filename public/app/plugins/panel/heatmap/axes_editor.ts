@@ -11,6 +11,9 @@ export class AxesEditorCtrl {
   constructor($scope: any, uiSegmentSrv: any) {
     $scope.editor = this;
     this.panelCtrl = $scope.ctrl;
+  }
+
+  $onInit() {
     this.panel = this.panelCtrl.panel;
     this.unitFormats = kbn.getUnitFormats();
 
