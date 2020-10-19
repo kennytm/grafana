@@ -32,13 +32,16 @@ interface State {
   snapshotExpires?: number;
   snapshotUrl: string;
   deleteUrl: string;
-  timeoutSeconds: number;
   externalEnabled: boolean;
   sharingButtonText: string;
+  isExternalSnapshot: boolean;
+  totalPanelsCount: number;
+  loadedPanelsCount: number;
 }
 
 export class ShareSnapshot extends PureComponent<Props, State> {
   private dashboard: DashboardModel;
+  private loadedPanelsInterval?: number;
 
   constructor(props: Props) {
     super(props);
@@ -49,16 +52,24 @@ export class ShareSnapshot extends PureComponent<Props, State> {
       selectedExpireOption: expireOptions[0],
       snapshotExpires: expireOptions[0].value,
       snapshotName: props.dashboard.title,
-      timeoutSeconds: 4,
       snapshotUrl: '',
       deleteUrl: '',
       externalEnabled: false,
       sharingButtonText: '',
+      isExternalSnapshot: false,
+      totalPanelsCount: 0,
+      loadedPanelsCount: 0,
     };
   }
 
   componentDidMount() {
+    this.refreshPanelsCount();
     this.getSnaphotShareOptions();
+  }
+
+  componentWillUnmount() {
+    this.clearLoadedPanelsInterval();
+    this.cleanupDashboard();
   }
 
   async getSnaphotShareOptions() {
@@ -69,8 +80,28 @@ export class ShareSnapshot extends PureComponent<Props, State> {
     });
   }
 
+  refreshPanelsCount(): { loadedPanelsCount: number; totalPanelsCount: number } {
+    let state = { loadedPanelsCount: 0, totalPanelsCount: 0 };
+    this.dashboard.panels.forEach(panel => {
+      if (panel.plugin && !panel.plugin.meta.skipDataQuery) {
+        state.totalPanelsCount++;
+        if (panel.snapshotData) {
+          state.loadedPanelsCount++;
+        }
+      }
+    });
+    this.setState(state);
+    return state;
+  }
+
+  clearLoadedPanelsInterval() {
+    if (this.loadedPanelsInterval) {
+      clearInterval(this.loadedPanelsInterval);
+      this.loadedPanelsInterval = undefined;
+    }
+  }
+
   createSnapshot = (external?: boolean) => () => {
-    const { timeoutSeconds } = this.state;
     this.dashboard.snapshot = {
       timestamp: new Date(),
     };
@@ -79,16 +110,21 @@ export class ShareSnapshot extends PureComponent<Props, State> {
       this.dashboard.snapshot.originalUrl = window.location.href;
     }
 
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, isExternalSnapshot: !!external });
     this.dashboard.startRefresh();
 
-    setTimeout(() => {
-      this.saveSnapshot(this.dashboard, external);
-    }, timeoutSeconds * 1000);
+    this.loadedPanelsInterval = window.setInterval(() => {
+      const state = this.refreshPanelsCount();
+      if (state.loadedPanelsCount >= state.totalPanelsCount) {
+        this.saveSnapshot();
+      }
+    }, 500);
   };
 
-  saveSnapshot = async (dashboard: DashboardModel, external?: boolean) => {
-    const { snapshotExpires } = this.state;
+  saveSnapshot = async () => {
+    this.clearLoadedPanelsInterval();
+
+    const { snapshotExpires, isExternalSnapshot: external } = this.state;
     const dash = this.dashboard.getSaveModelClone();
     this.scrubDashboard(dash);
 
@@ -158,6 +194,10 @@ export class ShareSnapshot extends PureComponent<Props, State> {
       dash.panels = [singlePanel];
     }
 
+    this.cleanupDashboard();
+  };
+
+  cleanupDashboard() {
     // cleanup snapshotData
     delete this.dashboard.snapshot;
     this.dashboard.forEachPanel((panel: PanelModel) => {
@@ -166,7 +206,7 @@ export class ShareSnapshot extends PureComponent<Props, State> {
     this.dashboard.annotations.list.forEach(annotation => {
       delete annotation.snapshotData;
     });
-  };
+  }
 
   deleteSnapshot = async () => {
     const { deleteUrl } = this.state;
@@ -182,8 +222,9 @@ export class ShareSnapshot extends PureComponent<Props, State> {
     this.setState({ snapshotName: event.target.value });
   };
 
-  onTimeoutChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ timeoutSeconds: Number(event.target.value) });
+  onExpandRows = () => {
+    this.dashboard.expandRows();
+    this.refreshPanelsCount();
   };
 
   onExpireChange = (option: SelectableValue<number>) => {
@@ -202,10 +243,11 @@ export class ShareSnapshot extends PureComponent<Props, State> {
     const {
       snapshotName,
       selectedExpireOption,
-      timeoutSeconds,
       isLoading,
       sharingButtonText,
       externalEnabled,
+      loadedPanelsCount,
+      totalPanelsCount,
     } = this.state;
 
     return (
@@ -215,6 +257,13 @@ export class ShareSnapshot extends PureComponent<Props, State> {
             A snapshot is an instant way to share an interactive dashboard publicly. When created, we{' '}
             <strong>strip sensitive data</strong> like queries (metric, template and annotation) and panel links,
             leaving only the visible metric data and series names embedded into your dashboard.
+          </p>
+          <p className="share-modal-info-text">
+            You may
+            <LinkButton variant="link" onClick={this.onExpandRows} disabled={isLoading}>
+              expand all rows
+            </LinkButton>
+            if some panels are hidden and you wish to export them too.
           </p>
           <p className="share-modal-info-text">
             Keep in mind, your <strong>snapshot can be viewed by anyone</strong> that has the link and can reach the
@@ -232,16 +281,15 @@ export class ShareSnapshot extends PureComponent<Props, State> {
           </div>
         </div>
 
-        <p className="share-modal-info-text">
-          You may need to configure the timeout value if it takes a long time to collect your dashboard's metrics.
-        </p>
-
-        <div className="gf-form-group share-modal-options">
-          <div className="gf-form">
-            <span className="gf-form-label width-12">Timeout (seconds)</span>
-            <Input type="number" width={15} value={timeoutSeconds} onChange={this.onTimeoutChange} />
+        {isLoading && (
+          <div>
+            <progress max={totalPanelsCount} value={loadedPanelsCount} />
+            {loadedPanelsCount} / {totalPanelsCount} panels loaded{' '}
+            <Button variant="secondary" size="sm" icon="forward" onClick={this.saveSnapshot}>
+              Export now
+            </Button>
           </div>
-        </div>
+        )}
 
         <div className="gf-form-button-row">
           <Button className="width-10" variant="primary" disabled={isLoading} onClick={this.createSnapshot()}>
