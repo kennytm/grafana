@@ -6,10 +6,17 @@ import { DashboardModel, PanelModel } from 'app/features/dashboard/state';
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { appEvents } from 'app/core/core';
 import { VariableRefresh } from '../../../variables/types';
+import { saveAs } from 'file-saver';
 
 const { Select, Input } = LegacyForms;
 
 const snapshotApiUrl = '/api/snapshots';
+
+enum SnapshotTarget {
+  local,
+  external,
+  saveAsFile,
+}
 
 const expireOptions: Array<SelectableValue<number>> = [
   { label: 'Never', value: 0 },
@@ -34,7 +41,7 @@ interface State {
   deleteUrl: string;
   externalEnabled: boolean;
   sharingButtonText: string;
-  isExternalSnapshot: boolean;
+  snapshotTarget: SnapshotTarget;
   totalPanelsCount: number;
   loadedPanelsCount: number;
 }
@@ -56,7 +63,7 @@ export class ShareSnapshot extends PureComponent<Props, State> {
       deleteUrl: '',
       externalEnabled: false,
       sharingButtonText: '',
-      isExternalSnapshot: false,
+      snapshotTarget: SnapshotTarget.local,
       totalPanelsCount: 0,
       loadedPanelsCount: 0,
     };
@@ -101,16 +108,16 @@ export class ShareSnapshot extends PureComponent<Props, State> {
     }
   }
 
-  createSnapshot = (external?: boolean) => () => {
+  createSnapshot = (snapshotTarget: SnapshotTarget) => () => {
     this.dashboard.snapshot = {
       timestamp: new Date(),
     };
 
-    if (!external) {
+    if (snapshotTarget === SnapshotTarget.local) {
       this.dashboard.snapshot.originalUrl = window.location.href;
     }
 
-    this.setState({ isLoading: true, isExternalSnapshot: !!external });
+    this.setState({ isLoading: true, snapshotTarget });
     this.dashboard.startRefresh();
 
     this.loadedPanelsInterval = window.setInterval(() => {
@@ -124,7 +131,8 @@ export class ShareSnapshot extends PureComponent<Props, State> {
   saveSnapshot = async () => {
     this.clearLoadedPanelsInterval();
 
-    const { snapshotExpires, isExternalSnapshot: external } = this.state;
+    const { snapshotExpires, snapshotTarget } = this.state;
+    const snapshotTimestamp = this.dashboard.snapshot.timestamp;
     const dash = this.dashboard.getSaveModelClone();
     this.scrubDashboard(dash);
 
@@ -132,20 +140,45 @@ export class ShareSnapshot extends PureComponent<Props, State> {
       dashboard: dash,
       name: dash.title,
       expires: snapshotExpires,
-      external: external,
+      external: snapshotTarget === SnapshotTarget.external,
     };
 
     try {
-      const results: { deleteUrl: any; url: any } = await getBackendSrv().post(snapshotApiUrl, cmdData);
-      this.setState({
-        deleteUrl: results.deleteUrl,
-        snapshotUrl: results.url,
-        step: 2,
-      });
+      if (snapshotTarget === SnapshotTarget.saveAsFile) {
+        this.saveSnapshotAsFile(dash, snapshotTimestamp.toISOString());
+        this.props.onDismiss();
+      } else {
+        const results: { deleteUrl: any; url: any } = await getBackendSrv().post(snapshotApiUrl, cmdData);
+        this.setState({
+          deleteUrl: results.deleteUrl,
+          snapshotUrl: results.url,
+          step: 2,
+        });
+      }
     } finally {
       this.setState({ isLoading: false });
     }
   };
+
+  saveSnapshotAsFile(dash: DashboardModel, snapshotTimestamp: string) {
+    dash.id = null;
+    dash.uid = '';
+    const snapshot = {
+      meta: {
+        isSnapshot: true,
+        type: 'snapshot',
+        expires: '9999-12-31T23:59:59Z',
+        created: snapshotTimestamp,
+      },
+      dashboard: dash,
+      overwrite: true,
+    };
+    const snapshotJson = JSON.stringify(snapshot);
+    const blob = new Blob([snapshotJson], {
+      type: 'application/json;charset=utf-8',
+    });
+    saveAs(blob, `${dash.title}_${snapshotTimestamp}.json`);
+  }
 
   scrubDashboard = (dash: DashboardModel) => {
     const { panel } = this.props;
@@ -292,11 +325,14 @@ export class ShareSnapshot extends PureComponent<Props, State> {
         )}
 
         <div className="gf-form-button-row">
-          <Button className="width-10" variant="primary" disabled={isLoading} onClick={this.createSnapshot()}>
+          <Button variant="primary" disabled={isLoading} onClick={this.createSnapshot(SnapshotTarget.local)}>
             Local Snapshot
           </Button>
+          <Button variant="secondary" disabled={isLoading} onClick={this.createSnapshot(SnapshotTarget.saveAsFile)}>
+            Save as File
+          </Button>
           {externalEnabled && (
-            <Button className="width-16" variant="secondary" disabled={isLoading} onClick={this.createSnapshot(true)}>
+            <Button variant="secondary" disabled={isLoading} onClick={this.createSnapshot(SnapshotTarget.external)}>
               {sharingButtonText}
             </Button>
           )}
