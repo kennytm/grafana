@@ -60,16 +60,32 @@ class DashNav extends PureComponent<Props> {
     appEvents.emit(CoreEvents.toggleKioskMode);
   };
 
+  onDropFile = (e: any) => {
+    e.preventDefault();
+    if (!e.dataTransfer || e.dataTransfer.files.length === 0) {
+      return;
+    }
+    this.renderFile(e.dataTransfer.files[0])
+  }
+
+  onDragOver = (e: any) => {
+    e.preventDefault();
+  }
+
+  renderFile = (path: Blob) => {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.props.onUploadSnapshot(JSON.parse(e.target.result));
+    };
+    reader.readAsText(path);
+  }
+
   onFileUpload = (e: React.FormEvent<HTMLInputElement>) => {
     const files = e.currentTarget.files;
     if (!files || files.length === 0) {
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.props.onUploadSnapshot(JSON.parse(e.target.result));
-    };
-    reader.readAsText(files[0]);
+    this.renderFile(files[0]);
   };
 
   addCustomContent(actions: DashNavButtonModel[], buttons: ReactNode[]) {
@@ -108,9 +124,9 @@ class DashNav extends PureComponent<Props> {
       <div className="navbar">
         {isFullscreen && this.renderBackButton()}
 
-        <div className="navbar-buttons navbar-buttons--actions">
+        <div className="navbar-buttons navbar-buttons--actions" onDrop={this.onDropFile} onDragOver={this.onDragOver}>
           <FileUpload accept="application/json" onFileUpload={this.onFileUpload}>
-            Open snapshot
+            Open snapshot (Or drop the file here)
           </FileUpload>
         </div>
 
